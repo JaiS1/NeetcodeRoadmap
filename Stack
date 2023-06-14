@@ -1,0 +1,157 @@
+#20. Valid Parentheses
+# Time Complexity: O(n)
+# Space Complexity: O(n)
+class Solution:
+    def isValid(self, s: str) -> bool:
+        Map = {")": "(", "]": "[", "}": "{"}
+        stack = []
+
+        for c in s:
+            if c not in Map:
+                stack.append(c)
+                continue
+            if not stack or stack[-1] != Map[c]:
+                return False
+            stack.pop()
+
+        return not stack
+
+#===================================================================================================
+
+#155. Min Stack
+# Time Complexity: O(1) for all operations: push, pop, top, getMin
+# Store a minimum for each stack point, so that we don't need to update after pop
+
+class MinStack:
+    def __init__(self):
+        self.stack = []
+        self.minStack = []
+
+    def push(self, val: int) -> None:
+        self.stack.append(val)
+        val = min(val, self.minStack[-1] if self.minStack else val)
+        self.minStack.append(val)
+
+    def pop(self) -> None:
+        self.stack.pop()
+        self.minStack.pop()
+
+    def top(self) -> int:
+        return self.stack[-1]
+
+    def getMin(self) -> int:
+        return self.minStack[-1]
+
+#===================================================================================================
+
+#150. Evaluate Reverse Polish Notation
+# Time Complexity: O(n)
+# Space Complexity: O(n)
+
+class Solution:
+    def evalRPN(self, tokens: List[str]) -> int:
+        stack = []
+        for c in tokens:
+            if c == "+":
+                stack.append(stack.pop() + stack.pop())
+            elif c == "-":
+                a, b = stack.pop(), stack.pop()
+                stack.append(b - a)
+            elif c == "*":
+                stack.append(stack.pop() * stack.pop())
+            elif c == "/":
+                a, b = stack.pop(), stack.pop()
+                stack.append(int(b / a))
+            else:
+                stack.append(int(c))
+        return stack[0]
+
+#===================================================================================================
+
+#22. Generate Parentheses - WORK ON THIS
+# Only add open parenthesis if open < n
+# Only add closed parenthesis if closed < open
+# Valid IFF open == closed == n                      Extra N
+# Time Complexity: O(4^n / sqrt(n)).                    \/
+# Total Number of valid parenthesis strings are O(4^n / n*sqrt(n)). Extra n from adding each valid string to answer
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        stack = []
+        res = []
+    
+        def backtrack(openN, closedN):
+            if openN == closedN == n:
+                res.append("".join(stack))
+                return
+
+            if openN < n:
+                stack.append("(")
+                backtrack(openN + 1, closedN)
+                stack.pop()
+            if closedN < openN:
+                stack.append(")")
+                backtrack(openN, closedN + 1)
+                stack.pop()
+
+        backtrack(0, 0)
+        return res
+
+#===================================================================================================
+
+#739. Daily Temperatures
+# Time Complexity: O(n)
+# Space Complexity: O(n)
+class Solution:
+    def dailyTemperatures(self, temperatures: List[int]) -> List[int]:
+        res = [0] * len(temperatures)
+        stack = []  # pair: [temp, index]
+
+        for i, t in enumerate(temperatures):
+            while stack and t > stack[-1][0]:
+                stackT, stackInd = stack.pop()
+                res[stackInd] = i - stackInd
+            stack.append((t, i))
+        return res
+    
+#===================================================================================================
+
+#853. Car Fleet
+#Technically a system of linear equations that intersect, speed == slope
+# Time Complexity: O(nlogn), since we are sorting cars by position 
+# Space Complexity: O(n)
+class Solution:
+    def carFleet(self, target: int, position: List[int], speed: List[int]) -> int:
+        pair = [(p, s) for p, s in zip(position, speed)]
+        pair.sort(reverse=True)
+        stack = []
+        for p, s in pair:  # Reverse Sorted Order
+            stack.append((target - p) / s) #Append time it reaches destination
+            if len(stack) >= 2 and stack[-1] <= stack[-2]:
+                stack.pop()
+        return len(stack)
+    
+#===================================================================================================
+
+#84. Largest Rectangle in Histogram
+# Time Complexity: O(n)
+# Space Complexity: O(n)
+
+class Solution:
+    def largestRectangleArea(self, heights: List[int]) -> int:
+        maxArea = 0
+        stack = []  # pair: (index, height)
+
+        for i, h in enumerate(heights):
+            start = i
+            while stack and stack[-1][1] > h:
+                index, height = stack.pop()
+                maxArea = max(maxArea, height * (i - index))
+                start = index
+            stack.append((start, h))
+
+        for i, h in stack:
+            maxArea = max(maxArea, h * (len(heights) - i))
+        return maxArea
+
+
+
